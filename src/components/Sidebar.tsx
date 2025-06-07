@@ -9,7 +9,8 @@ import {
   Calendar, 
   ClipboardList, 
   FileText,
-  Home
+  Home,
+  User
 } from 'lucide-react';
 
 const Sidebar: React.FC = () => {
@@ -39,7 +40,8 @@ const Sidebar: React.FC = () => {
         return [
           { icon: Home, label: 'Accueil', path: '/patient' },
           { icon: Calendar, label: 'Réserver RDV', path: '/patient/reserver' },
-          { icon: ClipboardList, label: 'Mes RDV', path: '/patient/rendez-vous' }
+          { icon: ClipboardList, label: 'Mes RDV', path: '/patient/rendez-vous' },
+          { icon: User, label: 'Mon Profil', path: '/patient/profil' }
         ];
       default:
         return [];

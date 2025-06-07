@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -16,14 +15,20 @@ import Register from "./pages/Register";
 // Pages Admin
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import MedecinsList from "./pages/admin/MedecinsList";
+import PatientsList from "./pages/admin/PatientsList";
 import AjouterMedecin from "./pages/admin/AjouterMedecin";
+import AjouterPatient from "./pages/admin/AjouterPatient";
 
 // Pages Médecin
 import MedecinDashboard from "./pages/medecin/MedecinDashboard";
+import Planning from "./pages/medecin/Planning";
+import ConsultationDetails from "./pages/medecin/ConsultationDetails";
 
 // Pages Patient
 import PatientDashboard from "./pages/patient/PatientDashboard";
 import ReserverRdv from "./pages/patient/ReserverRdv";
+import MesRendezVous from "./pages/patient/MesRendezVous";
+import MonProfil from "./pages/patient/MonProfil";
 
 // Page NotFound
 import NotFound from "./pages/NotFound";
@@ -98,10 +103,7 @@ const App = () => (
               } />
               <Route path="/admin/patients" element={
                 <ProtectedRoute allowedRoles={['admin']}>
-                  <div className="p-6">
-                    <h1 className="text-3xl font-bold">Liste des Patients</h1>
-                    <p className="text-gray-600 mt-2">Fonctionnalité en cours de développement</p>
-                  </div>
+                  <PatientsList />
                 </ProtectedRoute>
               } />
               <Route path="/admin/ajouter-medecin" element={
@@ -111,10 +113,7 @@ const App = () => (
               } />
               <Route path="/admin/ajouter-patient" element={
                 <ProtectedRoute allowedRoles={['admin']}>
-                  <div className="p-6">
-                    <h1 className="text-3xl font-bold">Ajouter un Patient</h1>
-                    <p className="text-gray-600 mt-2">Fonctionnalité en cours de développement</p>
-                  </div>
+                  <AjouterPatient />
                 </ProtectedRoute>
               } />
               
@@ -126,10 +125,7 @@ const App = () => (
               } />
               <Route path="/medecin/planning" element={
                 <ProtectedRoute allowedRoles={['medecin']}>
-                  <div className="p-6">
-                    <h1 className="text-3xl font-bold">Mon Planning</h1>
-                    <p className="text-gray-600 mt-2">Fonctionnalité en cours de développement</p>
-                  </div>
+                  <Planning />
                 </ProtectedRoute>
               } />
               <Route path="/medecin/ordonnances" element={
@@ -142,10 +138,7 @@ const App = () => (
               } />
               <Route path="/medecin/consultation/:id" element={
                 <ProtectedRoute allowedRoles={['medecin']}>
-                  <div className="p-6">
-                    <h1 className="text-3xl font-bold">Détails de la Consultation</h1>
-                    <p className="text-gray-600 mt-2">Fonctionnalité en cours de développement</p>
-                  </div>
+                  <ConsultationDetails />
                 </ProtectedRoute>
               } />
               <Route path="/medecin/ordonnance/:id" element={
@@ -170,10 +163,12 @@ const App = () => (
               } />
               <Route path="/patient/rendez-vous" element={
                 <ProtectedRoute allowedRoles={['patient']}>
-                  <div className="p-6">
-                    <h1 className="text-3xl font-bold">Mes Rendez-vous</h1>
-                    <p className="text-gray-600 mt-2">Fonctionnalité en cours de développement</p>
-                  </div>
+                  <MesRendezVous />
+                </ProtectedRoute>
+              } />
+              <Route path="/patient/profil" element={
+                <ProtectedRoute allowedRoles={['patient']}>
+                  <MonProfil />
                 </ProtectedRoute>
               } />
               
