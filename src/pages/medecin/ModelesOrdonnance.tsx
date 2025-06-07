@@ -37,6 +37,8 @@ const ModelesOrdonnance: React.FC = () => {
   });
 
   const [modeAjout, setModeAjout] = useState(false);
+  const [modeModification, setModeModification] = useState(false);
+  const [modeleEnCours, setModeleEnCours] = useState<string | null>(null);
 
   const handleAjouterModele = (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,12 +55,47 @@ const ModelesOrdonnance: React.FC = () => {
     });
   };
 
+  const handleModifierModele = (e: React.FormEvent) => {
+    e.preventDefault();
+    setModeles(modeles.map(m => 
+      m.id === modeleEnCours 
+        ? { ...m, ...nouveauModele }
+        : m
+    ));
+    setNouveauModele({ nom: '', medicaments: '', posologie: '', remarques: '' });
+    setModeModification(false);
+    setModeleEnCours(null);
+    toast({
+      title: "Modèle modifié",
+      description: "Le modèle d'ordonnance a été mis à jour avec succès",
+    });
+  };
+
+  const commencerModification = (modele: any) => {
+    setNouveauModele({
+      nom: modele.nom,
+      medicaments: modele.medicaments,
+      posologie: modele.posologie,
+      remarques: modele.remarques
+    });
+    setModeleEnCours(modele.id);
+    setModeModification(true);
+    setModeAjout(false);
+  };
+
   const supprimerModele = (id: string) => {
     setModeles(modeles.filter(m => m.id !== id));
     toast({
       title: "Modèle supprimé",
       description: "Le modèle d'ordonnance a été supprimé",
     });
+  };
+
+  const annulerOperation = () => {
+    setModeAjout(false);
+    setModeModification(false);
+    setModeleEnCours(null);
+    setNouveauModele({ nom: '', medicaments: '', posologie: '', remarques: '' });
   };
 
   return (
@@ -78,22 +115,28 @@ const ModelesOrdonnance: React.FC = () => {
         <Button 
           onClick={() => setModeAjout(true)}
           className="bg-blue-600 hover:bg-blue-700 flex items-center space-x-2"
+          disabled={modeModification}
         >
           <Plus className="h-4 w-4" />
           <span>Nouveau modèle</span>
         </Button>
       </div>
 
-      {modeAjout && (
+      {(modeAjout || modeModification) && (
         <Card>
           <CardHeader>
-            <CardTitle>Créer un nouveau modèle</CardTitle>
+            <CardTitle>
+              {modeModification ? 'Modifier le modèle' : 'Créer un nouveau modèle'}
+            </CardTitle>
             <CardDescription>
-              Créez un modèle d'ordonnance réutilisable pour vos consultations
+              {modeModification 
+                ? 'Modifiez les informations du modèle d\'ordonnance'
+                : 'Créez un modèle d\'ordonnance réutilisable pour vos consultations'
+              }
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleAjouterModele} className="space-y-4">
+            <form onSubmit={modeModification ? handleModifierModele : handleAjouterModele} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="nom">Nom du modèle</Label>
                 <Input
@@ -143,12 +186,12 @@ const ModelesOrdonnance: React.FC = () => {
               <div className="flex space-x-2">
                 <Button type="submit" className="bg-blue-600 hover:bg-blue-700 flex items-center space-x-2">
                   <Save className="h-4 w-4" />
-                  <span>Créer le modèle</span>
+                  <span>{modeModification ? 'Sauvegarder' : 'Créer le modèle'}</span>
                 </Button>
                 <Button 
                   type="button" 
                   variant="outline" 
-                  onClick={() => setModeAjout(false)}
+                  onClick={annulerOperation}
                 >
                   Annuler
                 </Button>
@@ -170,7 +213,12 @@ const ModelesOrdonnance: React.FC = () => {
                   </CardTitle>
                 </div>
                 <div className="flex space-x-2">
-                  <Button size="sm" variant="outline">
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => commencerModification(modele)}
+                    disabled={modeAjout || modeModification}
+                  >
                     <Edit className="h-4 w-4" />
                   </Button>
                   <Button 
@@ -178,6 +226,7 @@ const ModelesOrdonnance: React.FC = () => {
                     variant="outline" 
                     onClick={() => supprimerModele(modele.id)}
                     className="text-red-600 hover:bg-red-50"
+                    disabled={modeAjout || modeModification}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
