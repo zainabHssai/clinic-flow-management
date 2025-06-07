@@ -47,14 +47,7 @@ const Login: React.FC = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
-      {/* Background Image with Overlay */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: `url('https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.istockphoto.com%2Ffr%2Fphotos%2Fm%25C3%25A9decin-flou&psig=AOvVaw07zXVn5KcXskydJ2_r91-I&ust=1749346907598000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCOic-5-X3o0DFQAAAAAdAAAAABAE')`,
-          filter: 'blur(3px)',
-          transform: 'scale(1.1)',
-        }}
+    
       />
       <div className="absolute inset-0 bg-blue-900/20" />
       <div className="absolute inset-0 bg-gradient-to-br from-blue-600/30 via-transparent to-blue-800/30" />
