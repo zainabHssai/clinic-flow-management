@@ -7,6 +7,7 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { toast } from '../hooks/use-toast';
+import { Heart, Stethoscope } from 'lucide-react';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -46,14 +47,19 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-white p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-blue-900">
-            Cabinet Médical
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-blue-100 p-4">
+      <Card className="w-full max-w-md shadow-xl border-0">
+        <CardHeader className="text-center pb-8">
+          <div className="flex justify-center mb-6">
+            <div className="bg-gradient-to-br from-blue-600 to-blue-800 p-4 rounded-2xl shadow-lg">
+              <Heart className="h-8 w-8 text-white" />
+            </div>
+          </div>
+          <CardTitle className="text-3xl font-bold bg-gradient-to-r from-blue-900 to-blue-700 bg-clip-text text-transparent">
+            MediCare Pro
           </CardTitle>
-          <CardDescription>
-            Connectez-vous à votre espace
+          <CardDescription className="text-gray-600 mt-2">
+            Connectez-vous à votre espace médical sécurisé
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -67,6 +73,7 @@ const Login: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                className="h-12"
               />
             </div>
             <div className="space-y-2">
@@ -78,11 +85,12 @@ const Login: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                className="h-12"
               />
             </div>
             <Button 
               type="submit" 
-              className="w-full bg-blue-600 hover:bg-blue-700"
+              className="w-full h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium"
               disabled={loading}
             >
               {loading ? 'Connexion...' : 'Se connecter'}
@@ -94,7 +102,7 @@ const Login: React.FC = () => {
               Pas encore de compte ?{' '}
               <Button 
                 variant="link" 
-                className="p-0 h-auto text-blue-600"
+                className="p-0 h-auto text-blue-600 hover:text-blue-800"
                 onClick={() => navigate('/register')}
               >
                 Créer un compte
@@ -102,12 +110,24 @@ const Login: React.FC = () => {
             </p>
           </div>
 
-          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-            <p className="text-xs text-gray-500 mb-2">Comptes de démonstration :</p>
-            <div className="space-y-1 text-xs">
-              <p><strong>Admin:</strong> admin@cabinet.com / admin123</p>
-              <p><strong>Médecin:</strong> dr.martin@cabinet.com / medecin123</p>
-              <p><strong>Patient:</strong> pierre.durand@email.com / patient123</p>
+          <div className="mt-8 p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg border border-blue-200">
+            <div className="flex items-center space-x-2 mb-3">
+              <Stethoscope className="h-4 w-4 text-blue-600" />
+              <p className="text-sm font-medium text-blue-800">Comptes de démonstration</p>
+            </div>
+            <div className="space-y-2 text-xs text-blue-700">
+              <div className="flex justify-between">
+                <span className="font-medium">Admin:</span>
+                <span>admin@cabinet.com / admin123</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="font-medium">Médecin:</span>
+                <span>dr.martin@cabinet.com / medecin123</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="font-medium">Patient:</span>
+                <span>pierre.durand@email.com / patient123</span>
+              </div>
             </div>
           </div>
         </CardContent>

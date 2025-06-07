@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -9,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { toast } from '../hooks/use-toast';
 import { UserRole } from '../types';
+import { Heart, UserPlus } from 'lucide-react';
 
 const Register: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -69,14 +69,19 @@ const Register: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-white p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-blue-900">
-            Créer un compte
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-blue-100 p-4">
+      <Card className="w-full max-w-md shadow-xl border-0">
+        <CardHeader className="text-center pb-6">
+          <div className="flex justify-center mb-4">
+            <div className="bg-gradient-to-br from-blue-600 to-blue-800 p-3 rounded-2xl shadow-lg">
+              <Heart className="h-6 w-6 text-white" />
+            </div>
+          </div>
+          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-900 to-blue-700 bg-clip-text text-transparent">
+            Rejoindre MediCare Pro
           </CardTitle>
-          <CardDescription>
-            Rejoignez notre cabinet médical
+          <CardDescription className="text-gray-600">
+            Créez votre compte médical sécurisé
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -183,9 +188,10 @@ const Register: React.FC = () => {
 
             <Button 
               type="submit" 
-              className="w-full bg-blue-600 hover:bg-blue-700"
+              className="w-full h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium"
               disabled={loading}
             >
+              <UserPlus className="mr-2 h-4 w-4" />
               {loading ? 'Création...' : 'Créer le compte'}
             </Button>
           </form>
@@ -195,7 +201,7 @@ const Register: React.FC = () => {
               Déjà un compte ?{' '}
               <Button 
                 variant="link" 
-                className="p-0 h-auto text-blue-600"
+                className="p-0 h-auto text-blue-600 hover:text-blue-800"
                 onClick={() => navigate('/login')}
               >
                 Se connecter

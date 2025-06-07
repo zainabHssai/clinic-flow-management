@@ -23,6 +23,9 @@ import AjouterPatient from "./pages/admin/AjouterPatient";
 import MedecinDashboard from "./pages/medecin/MedecinDashboard";
 import Planning from "./pages/medecin/Planning";
 import ConsultationDetails from "./pages/medecin/ConsultationDetails";
+import BloquerCreneau from "./pages/medecin/BloquerCreneau";
+import ModifierHoraires from "./pages/medecin/ModifierHoraires";
+import ModelesOrdonnance from "./pages/medecin/ModelesOrdonnance";
 
 // Pages Patient
 import PatientDashboard from "./pages/patient/PatientDashboard";
@@ -126,6 +129,21 @@ const App = () => (
               <Route path="/medecin/planning" element={
                 <ProtectedRoute allowedRoles={['medecin']}>
                   <Planning />
+                </ProtectedRoute>
+              } />
+              <Route path="/medecin/bloquer-creneau" element={
+                <ProtectedRoute allowedRoles={['medecin']}>
+                  <BloquerCreneau />
+                </ProtectedRoute>
+              } />
+              <Route path="/medecin/modifier-horaires" element={
+                <ProtectedRoute allowedRoles={['medecin']}>
+                  <ModifierHoraires />
+                </ProtectedRoute>
+              } />
+              <Route path="/medecin/modeles-ordonnance" element={
+                <ProtectedRoute allowedRoles={['medecin']}>
+                  <ModelesOrdonnance />
                 </ProtectedRoute>
               } />
               <Route path="/medecin/ordonnances" element={

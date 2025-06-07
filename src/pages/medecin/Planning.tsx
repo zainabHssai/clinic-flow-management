@@ -1,11 +1,12 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
 import { Calendar, Clock, User, FileText } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const Planning: React.FC = () => {
+  const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
 
   // Données mockées pour la démo
@@ -111,7 +112,11 @@ const Planning: React.FC = () => {
                             <Button size="sm" variant="outline">
                               Modifier
                             </Button>
-                            <Button size="sm" variant="outline">
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => navigate(`/medecin/consultation/${creneau.id}`)}
+                            >
                               <FileText className="h-4 w-4 mr-1" />
                               Dossier
                             </Button>
@@ -158,15 +163,30 @@ const Planning: React.FC = () => {
               <CardTitle className="text-lg">Actions rapides</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <Button variant="outline" size="sm" className="w-full justify-start">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full justify-start"
+                onClick={() => navigate('/medecin/bloquer-creneau')}
+              >
                 <Calendar className="mr-2 h-4 w-4" />
                 Bloquer un créneau
               </Button>
-              <Button variant="outline" size="sm" className="w-full justify-start">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full justify-start"
+                onClick={() => navigate('/medecin/modifier-horaires')}
+              >
                 <Clock className="mr-2 h-4 w-4" />
                 Modifier horaires
               </Button>
-              <Button variant="outline" size="sm" className="w-full justify-start">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full justify-start"
+                onClick={() => navigate('/medecin/modeles-ordonnance')}
+              >
                 <FileText className="mr-2 h-4 w-4" />
                 Modèles d'ordonnance
               </Button>
