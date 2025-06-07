@@ -51,7 +51,7 @@ const Login: React.FC = () => {
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: `url('https://images.unsplash.com/photo-1582750433449-648ed127bb54?ixlib=rb-4.0.3&auto=format&fit=crop&w=1950&q=80')`,
+          backgroundImage: `url('https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.istockphoto.com%2Ffr%2Fphotos%2Fm%25C3%25A9decin-flou&psig=AOvVaw07zXVn5KcXskydJ2_r91-I&ust=1749346907598000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCOic-5-X3o0DFQAAAAAdAAAAABAE')`,
           filter: 'blur(3px)',
           transform: 'scale(1.1)',
         }}
