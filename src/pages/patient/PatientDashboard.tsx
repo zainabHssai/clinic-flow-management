@@ -100,24 +100,28 @@ const PatientDashboard: React.FC = () => {
 }, []);
 
 const get_state = (rdv: any) => {
-  if (rdv.etat === "confirmé") {
-    return "Confirmé";
+  if (rdv.etat === "validé") {
+    return "Validé";
   } else if (rdv.etat === "annulé") {
     return "Annulé";
   } else if (rdv.etat === "en attente") {
     return "En attente";
+  } else if (rdv.etat === "terminé") {
+    return "Terminé";
   } else {
     return "Inconnu";
   }
 }
 
 const getStateColor = (rdv: any) => {
-  if (rdv.etat === "confirmé") {
+  if (rdv.etat === "validé") {
     return "bg-green-600";
   } else if (rdv.etat === "annulé") {
     return "bg-red-100 text-red-800";
   } else if (rdv.etat === "en attente") {
     return "bg-blue-600";
+  } else if (rdv.etat === "terminé") {
+    return "bg-gray-200 text-gray-800";
   } else {
     return "bg-gray-100 text-gray-800";
   }

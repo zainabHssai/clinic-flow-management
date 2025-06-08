@@ -1,64 +1,137 @@
 
-import React from 'react';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
 import { Calendar, Clock, CheckCircle, XCircle, FileText } from 'lucide-react';
+import { fetchDernieresConsultations } from "@/services/api";
 
 const MedecinDashboard: React.FC = () => {
   const navigate = useNavigate();
 
   // Données mockées pour la démo
-  const consultations = [
-    {
-      id: '1',
-      patient: 'Pierre Durand',
-      date: '2024-06-07',
-      heure: '09:00',
-      statut: 'programmee' as const,
-      symptomes: 'Douleurs thoraciques'
-    },
-    {
-      id: '2',
-      patient: 'Marie Dubois',
-      date: '2024-06-07',
-      heure: '10:30',
-      statut: 'programmee' as const,
-      symptomes: 'Contrôle de routine'
-    },
-    {
-      id: '3',
-      patient: 'Jean Martin',
-      date: '2024-06-07',
-      heure: '14:00',
-      statut: 'validee' as const,
-      symptomes: 'Essoufflement'
-    }
-  ];
+  // const consultations = [
+  //   {
+  //     id: '1',
+  //     patient: 'Pierre Durand',
+  //     date: '2024-06-07',
+  //     heure: '09:00',
+  //     statut: 'programmee' as const,
+  //     symptomes: 'Douleurs thoraciques'
+  //   },
+  //   {
+  //     id: '2',
+  //     patient: 'Marie Dubois',
+  //     date: '2024-06-07',
+  //     heure: '10:30',
+  //     statut: 'programmee' as const,
+  //     symptomes: 'Contrôle de routine'
+  //   },
+  //   {
+  //     id: '3',
+  //     patient: 'Jean Martin',
+  //     date: '2024-06-07',
+  //     heure: '14:00',
+  //     statut: 'validee' as const,
+  //     symptomes: 'Essoufflement'
+  //   }
+  // ];
+  const [consultations, setConsultations] = useState([]);
+  const fetchConsultations = async () => {
+  try {
+    const medecinId = "6844b71ec386496aa22a560e"; // à remplacer dynamiquement si possible
+    const response = await axios.get(`http://localhost:5000/api/medecin/${medecinId}/rendezvous`);
+    const data = response.data;
+    console.log("Consultations récupérées :", data);
+
+    // Date d'aujourd'hui sans heures
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // On filtre les rendez-vous dont la date correspond à aujourd'hui
+    const filteredData = data.filter(item => {
+      const itemDate = new Date(item.date);
+      itemDate.setHours(0, 0, 0, 0);
+      return itemDate.getTime() === today.getTime();
+    });
+
+    // Formatage des données
+    const formatted = filteredData.map((item) => ({
+      id: item.rendezvous_id,
+      patient: `${item.patient.prenom} ${item.patient.nom}`,
+      date: item.date,
+      heure: item.heure,
+      statut: item.etat.toLowerCase(),
+      symptomes: item.motif
+    }));
+
+    setConsultations(formatted);
+    console.log("Consultations formatées pour aujourd'hui :", formatted);
+  } catch (error) {
+    console.error("Erreur lors de la récupération des consultations :", error);
+  }
+};
+useEffect(() => {
+  fetchConsultations();
+}, []);
+
+
+
+
 
   const getStatutBadge = (statut: string) => {
     switch (statut) {
-      case 'programmee':
-        return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">Programmée</Badge>;
-      case 'validee':
-        return <Badge variant="secondary" className="bg-green-100 text-green-800">Validée</Badge>;
-      case 'annulee':
-        return <Badge variant="secondary" className="bg-red-100 text-red-800">Annulée</Badge>;
+      case 'en attente':
+        return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">En attente</Badge>;
+      case 'validé':
+        return <Badge variant="secondary" className="bg-green-100 text-green-800">Validé</Badge>;
+      case 'annulé':
+        return <Badge variant="secondary" className="bg-red-100 text-red-800">Annulé</Badge>;
       default:
         return <Badge variant="secondary">{statut}</Badge>;
     }
   };
 
-  const validerConsultation = (consultationId: string) => {
-    console.log('Validation consultation:', consultationId);
-    // Logique de validation
-  };
+  // const validerConsultation = (consultationId: string) => {
+  //   console.log('Validation consultation:', consultationId);
+  //   // Logique de validation
+  // };
 
-  const annulerConsultation = (consultationId: string) => {
-    console.log('Annulation consultation:', consultationId);
-    // Logique d'annulation
-  };
+  // const annulerConsultation = (consultationId: string) => {
+  //   console.log('Annulation consultation:', consultationId);
+  //   // Logique d'annulation
+  // };
+
+  const validerConsultation = async (consultationId: string) => {
+  try {
+    await axios.put(`http://localhost:5000/medecin/${consultationId}/valider`);
+    setConsultations(prev =>
+      prev.map(c =>
+        c.id === consultationId ? { ...c, statut: "validee" } : c
+      )
+    );
+
+    console.log("Consultation validée avec succès");
+  } catch (error) {
+    console.error("Erreur lors de la validation :", error);
+  }
+  fetchConsultations(); // Recharger les consultations après validation
+};
+
+const annulerConsultation = async (consultationId: string) => {
+  try {
+    await axios.put(`http://localhost:5000/patient/rdv/${consultationId}/annuler`);
+    await fetchConsultations();  // Rafraîchit la liste après annulation
+    console.log("Consultation annulée avec succès");
+  } catch (error) {
+    console.error("Erreur lors de l'annulation :", error);
+  }
+};
+
+
 
   return (
     <div className="p-6 space-y-6">
@@ -96,7 +169,7 @@ const MedecinDashboard: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {consultations.filter(c => c.statut === 'programmee').length}
+              {consultations.filter(c => c.statut === 'en attente').length}
             </div>
             <p className="text-xs text-muted-foreground">À valider</p>
           </CardContent>
@@ -109,7 +182,7 @@ const MedecinDashboard: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {consultations.filter(c => c.statut === 'validee').length}
+              {consultations.filter(c => c.statut === 'validé').length}
             </div>
             <p className="text-xs text-muted-foreground">Terminées</p>
           </CardContent>
@@ -156,7 +229,7 @@ const MedecinDashboard: React.FC = () => {
                       Détails
                     </Button>
                     
-                    {consultation.statut === 'programmee' && (
+                    {consultation.statut === 'en attente' && (
                       <>
                         <Button 
                           size="sm" 
