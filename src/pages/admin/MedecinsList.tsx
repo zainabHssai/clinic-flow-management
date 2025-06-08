@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
@@ -8,37 +8,67 @@ import { UserPlus, Mail, Phone, Users } from 'lucide-react';
 
 const MedecinsList: React.FC = () => {
   const navigate = useNavigate();
+  const [medecins, setMedecins] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   // Données mockées pour la démo
-  const medecins = [
-    {
-      id: '1',
-      nom: 'Martin',
-      prenom: 'Dr. Sophie',
-      specialite: 'Cardiologie',
-      email: 'dr.martin@cabinet.com',
-      phone: '0123456789',
-      consultations: 15
-    },
-    {
-      id: '2',
-      nom: 'Leroy',
-      prenom: 'Dr. Michel',
-      specialite: 'Dermatologie',
-      email: 'dr.leroy@cabinet.com',
-      phone: '0123456790',
-      consultations: 8
-    },
-    {
-      id: '3',
-      nom: 'Dubois',
-      prenom: 'Dr. Anne',
-      specialite: 'Pédiatrie',
-      email: 'dr.dubois@cabinet.com',
-      phone: '0123456791',
-      consultations: 22
+  // const medecins = [
+  //   {
+  //     id: '1',
+  //     nom: 'Martin',
+  //     prenom: 'Dr. Sophie',
+  //     specialite: 'Cardiologie',
+  //     email: 'dr.martin@cabinet.com',
+  //     phone: '0123456789',
+  //     consultations: 15
+  //   },
+  //   {
+  //     id: '2',
+  //     nom: 'Leroy',
+  //     prenom: 'Dr. Michel',
+  //     specialite: 'Dermatologie',
+  //     email: 'dr.leroy@cabinet.com',
+  //     phone: '0123456790',
+  //     consultations: 8
+  //   },
+  //   {
+  //     id: '3',
+  //     nom: 'Dubois',
+  //     prenom: 'Dr. Anne',
+  //     specialite: 'Pédiatrie',
+  //     email: 'dr.dubois@cabinet.com',
+  //     phone: '0123456791',
+  //     consultations: 22
+  //   }
+  // ];
+
+  useEffect(() => {
+  const fetchMedecins = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/admin/medecins"); // ajuste si tu as un proxy ou un port différent
+      const data = await response.json();
+      
+     const medecinsAvecConsultations = await Promise.all(data.map(async (m: any) => {
+      try {
+        const res = await fetch(`http://localhost:5000/admin/consultations/termines/count/${m._id}`);
+        const consultations = await res.json();
+        return { ...m, consultations: consultations.total };  // <-- ici
+      } catch {
+        return { ...m, consultations: 0 };
+      }
+    }));
+
+      setMedecins(medecinsAvecConsultations);
+    } catch (error) {
+      console.error("Erreur lors du chargement des médecins :", error);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  fetchMedecins();
+}, []);
+
 
   return (
     <div className="p-6 space-y-6">
@@ -54,24 +84,30 @@ const MedecinsList: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {medecins.map((medecin) => (
-          <Card key={medecin.id} className="hover:shadow-lg transition-shadow">
+        {medecins.map((medecin: any) => (
+          <Card key={medecin._id} className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="flex justify-between items-start">
                 <div>
-                  <CardTitle className="text-lg">{medecin.prenom} {medecin.nom}</CardTitle>
-                  <CardDescription className="mt-1">
+                  <CardTitle className="text-lg">
+                    {medecin.prenom} {medecin.nom}
+                  </CardTitle>
+
+                  {/* Remplace CardDescription par un simple div */}
+                  <div className="mt-1">
                     <Badge variant="secondary" className="bg-blue-100 text-blue-800">
                       {medecin.specialite}
                     </Badge>
-                  </CardDescription>
+                  </div>
                 </div>
+
                 <div className="text-right">
-                  <div className="text-2xl font-bold text-blue-600">{medecin.consultations}</div>
+                  <div className="text-2xl font-bold text-blue-600">{medecin.consultations || 0}</div>
                   <div className="text-xs text-gray-500">consultations</div>
                 </div>
               </div>
             </CardHeader>
+
             <CardContent className="space-y-3">
               <div className="flex items-center space-x-2 text-sm text-gray-600">
                 <Mail className="h-4 w-4" />
@@ -79,7 +115,7 @@ const MedecinsList: React.FC = () => {
               </div>
               <div className="flex items-center space-x-2 text-sm text-gray-600">
                 <Phone className="h-4 w-4" />
-                <span>{medecin.phone}</span>
+                <span>{medecin.telephone}</span>
               </div>
               <div className="flex space-x-2 mt-4">
                 <Button variant="outline" size="sm" className="flex-1">
@@ -92,6 +128,7 @@ const MedecinsList: React.FC = () => {
             </CardContent>
           </Card>
         ))}
+
       </div>
 
       {medecins.length === 0 && (

@@ -187,7 +187,7 @@ const Register: React.FC = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="admin">Administrateur</SelectItem>
-                    <SelectItem value="medecin">Médecin</SelectItem>
+                    {/* <SelectItem value="medecin">Médecin</SelectItem> */}
                     <SelectItem value="patient">Patient</SelectItem>
                   </SelectContent>
                 </Select>
