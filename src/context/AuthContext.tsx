@@ -4,10 +4,11 @@ import { User, UserRole } from '../types';
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (userDate: any) => Promise<boolean>;
   register: (userData: Omit<User, 'id'> & { password: string }) => Promise<boolean>;
   logout: () => void;
   isAuthenticated: boolean;
+  isInitialized: boolean; // AJOUTE CECI
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -45,24 +46,26 @@ const mockUsers: (User & { password: string })[] = [
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
     const savedUser = localStorage.getItem('currentUser');
     if (savedUser) {
       setUser(JSON.parse(savedUser));
     }
+    setIsInitialized(true);
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
-    const foundUser = mockUsers.find(u => u.email === email && u.password === password);
-    if (foundUser) {
-      const { password: _, ...userWithoutPassword } = foundUser;
-      setUser(userWithoutPassword);
-      localStorage.setItem('currentUser', JSON.stringify(userWithoutPassword));
-      return true;
-    }
-    return false;
-  };
+    // Nouvelle signature
+    const login = async (userData: any): Promise<boolean> => {
+        try {
+            setUser(userData);
+            localStorage.setItem('currentUser', JSON.stringify(userData));
+            return true;
+        } catch {
+            return false;
+        }
+    };
 
   const register = async (userData: Omit<User, 'id'> & { password: string }): Promise<boolean> => {
     const newUser = {
@@ -87,7 +90,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       login,
       register,
       logout,
-      isAuthenticated: !!user
+      isAuthenticated: !!user,
+      isInitialized
     }}>
       {children}
     </AuthContext.Provider>

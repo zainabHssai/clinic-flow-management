@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
@@ -11,22 +11,96 @@ import { User, Mail, Phone, Calendar, Camera, Save } from 'lucide-react';
 const MonProfil: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    nom: 'Durand',
-    prenom: 'Pierre',
-    email: 'pierre.durand@email.com',
-    contact: '0123456789',
-    age: '35',
-    adresse: '123 Rue de la Paix, 75001 Paris',
-    dateNaissance: '1989-03-15',
-    numeroSecu: '1 89 03 75 001 123 45'
+    nom: '',
+    prenom: '',
+    email: '',
+    telephone: '',
+    age: '',
+    adress: '',
+    dateNaissance: '',
+    numeroSecu: ''
   });
 
-  const handleSave = () => {
-    toast({
-      title: "Profil mis à jour",
-      description: "Vos informations ont été sauvegardées avec succès",
-    });
-    setIsEditing(false);
+  const user = JSON.parse(localStorage.getItem("currentUser")); // ou autre méthode pour récupérer l'ID connecté
+  
+  useEffect(() => {
+    const fetchPatientData = async () => {
+      const patientId = user.id; // Assurez-vous que l'ID de l'utilisateur est correct
+      if (!patientId) {
+        console.error("Aucun ID d'utilisateur trouvé");
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger les informations du profil.",
+          variant: "destructive"
+        });
+        return;
+      }
+      try {
+        const res = await fetch(`http://localhost:5000/admin/patients/${patientId}`);
+        const data = await res.json();
+
+        console.log(data);
+
+        // Optionnel : calcul de l'âge à partir de la date de naissance
+        const age = data.dateNaissance
+          ? `${Math.floor((new Date().getTime() - new Date(data.dateNaissance).getTime()) / (1000 * 3600 * 24 * 365))}`
+          : '';
+
+        setFormData({
+          nom: data.nom || '',
+          prenom: data.prenom || '',
+          email: data.email || '',
+          telephone: data.telephone || '',
+          age,
+          adress: data.adress || '',
+          dateNaissance: data.dateNaissance?.split("T")[0] || '', // format AAAA-MM-JJ
+          numeroSecu: data.numeroSecu || '',
+        });
+      } catch (err) {
+        console.error("Erreur lors de la récupération du profil :", err);
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger les informations du profil.",
+          variant: "destructive"
+        });
+      }
+    };
+
+    fetchPatientData();
+  }, [user.id]);
+
+  const handleSave = async () => {
+    const patientId = user.id; // Assurez-vous que l'ID de l'utilisateur est correct
+      if (!patientId) {
+        console.error("Aucun ID d'utilisateur trouvé");
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger les informations du profil.",
+          variant: "destructive"
+        });
+        return;
+      }
+    try {
+      const res = await fetch(`http://localhost:5000/admin/patients/${patientId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (!res.ok) throw new Error();
+
+      toast({
+        title: "Profil mis à jour",
+        description: "Vos informations ont été sauvegardées avec succès",
+      });
+      setIsEditing(false);
+    } catch {
+      toast({
+        title: "Erreur",
+        description: "La mise à jour du profil a échoué.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleImageUpload = () => {
@@ -102,11 +176,11 @@ const MonProfil: React.FC = () => {
               </div>
               <div className="flex items-center space-x-3">
                 <Mail className="h-5 w-5 text-blue-600" />
-                <div className="text-sm text-gray-600">{formData.email}</div>
+                <div className="text-sm text-gray-600 break-all">{formData.email}</div>
               </div>
               <div className="flex items-center space-x-3">
                 <Phone className="h-5 w-5 text-blue-600" />
-                <div className="text-sm text-gray-600">{formData.contact}</div>
+                <div className="text-sm text-gray-600">{formData.telephone}</div>
               </div>
             </CardContent>
           </Card>
@@ -145,29 +219,6 @@ const MonProfil: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => handleChange('email', e.target.value)}
-                    disabled={!isEditing}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="contact">Téléphone</Label>
-                  <Input
-                    id="contact"
-                    type="tel"
-                    value={formData.contact}
-                    onChange={(e) => handleChange('contact', e.target.value)}
-                    disabled={!isEditing}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
                   <Label htmlFor="dateNaissance">Date de naissance</Label>
                   <Input
                     id="dateNaissance"
@@ -178,6 +229,30 @@ const MonProfil: React.FC = () => {
                   />
                 </div>
                 <div className="space-y-2">
+                  <Label htmlFor="telephone">Téléphone</Label>
+                  <Input
+                    id="telephone"
+                    type="tel"
+                    value={formData.telephone}
+                    onChange={(e) => handleChange('telephone', e.target.value)}
+                    disabled={!isEditing}
+                  />
+                </div>
+              </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => handleChange('email', e.target.value)}
+                    disabled={!isEditing}
+                  />
+                </div>
+                
+              {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
                   <Label htmlFor="numeroSecu">Numéro de sécurité sociale</Label>
                   <Input
                     id="numeroSecu"
@@ -186,14 +261,14 @@ const MonProfil: React.FC = () => {
                     disabled={!isEditing}
                   />
                 </div>
-              </div>
+              </div> */}
 
               <div className="space-y-2">
-                <Label htmlFor="adresse">Adresse</Label>
+                <Label htmlFor="adress">Adresse</Label>
                 <Input
-                  id="adresse"
-                  value={formData.adresse}
-                  onChange={(e) => handleChange('adresse', e.target.value)}
+                  id="adress"
+                  value={formData.adress}
+                  onChange={(e) => handleChange('adress', e.target.value)}
                   disabled={!isEditing}
                 />
               </div>

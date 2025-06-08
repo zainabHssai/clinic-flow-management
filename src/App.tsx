@@ -40,41 +40,48 @@ const queryClient = new QueryClient();
 
 // Composant pour rediriger selon le rôle
 const RoleBasedRedirect = () => {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   
-  if (!user) return <Navigate to="/login" replace />;
+  // Si non authentifié, redirige vers login
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
   
+  // Si authentifié mais user pas encore chargé (peut arriver au premier rendu)
+  if (!user) return <div>Chargement...</div>;
+  
+  // Redirection basée sur le rôle
   switch (user.role) {
-    case 'admin':
-      return <Navigate to="/admin" replace />;
-    case 'medecin':
-      return <Navigate to="/medecin" replace />;
-    case 'patient':
-      return <Navigate to="/patient" replace />;
-    default:
+    case 'admin': return <Navigate to="/admin" replace />;
+    case 'medecin': return <Navigate to="/medecin" replace />;
+    case 'patient': return <Navigate to="/patient" replace />;
+    default: 
+      localStorage.removeItem('currentUser');
       return <Navigate to="/login" replace />;
   }
 };
 
 // Layout principal avec sidebar
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated } = useAuth();
-  
-  if (!isAuthenticated) {
-    return <>{children}</>;
-  }
-  
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-      <div className="flex">
-        <Sidebar />
-        <main className="flex-1 overflow-x-hidden">
-          {children}
-        </main>
-      </div>
+  const { isAuthenticated, user, isInitialized } = useAuth();
+
+if (!isInitialized) {
+  return <div>Chargement...</div>; // ou un spinner stylé
+}
+
+if (!isAuthenticated || !user) {
+  return <>{children}</>; // login/register sans sidebar
+}
+
+return (
+  <div className="min-h-screen bg-gray-50">
+    <Header />
+    <div className="flex">
+      <Sidebar />
+      <main className="flex-1 overflow-x-hidden">
+        {children}
+      </main>
     </div>
-  );
+  </div>
+);
 };
 
 const App = () => (

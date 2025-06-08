@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
@@ -18,43 +18,79 @@ const ReserverRdv: React.FC = () => {
     motif: ''
   });
   const [loading, setLoading] = useState(false);
+  const user : any = JSON.parse(localStorage.getItem("currentUser"));
+  const [medecins, setMedecins] = useState<any>([]);
+  const [loadingMedecins, setLoadingMedecins] = useState(true);
+
+  useEffect(() => {
+    async function fetchMedecins() {
+      try {
+        const res = await fetch('http://127.0.0.1:5000/admin/medecins');  // Ou /medecins selon ta config
+        const data = await res.json();
+        console.log(medecins);
+        setMedecins(data);
+        console.log(data);
+        console.log(medecins);
+      } catch (error) {
+        console.error('Erreur récupération médecins:', error);
+      } finally {
+        setLoadingMedecins(false);
+      }
+    }
+    fetchMedecins();
+  }, []);
+
+  
 
   // Données mockées pour la démo
-  const medecins = [
-    { id: '1', nom: 'Dr. Sophie Martin', specialite: 'Cardiologie' },
-    { id: '2', nom: 'Dr. Michel Leroy', specialite: 'Dermatologie' },
-    { id: '3', nom: 'Dr. Anne Dubois', specialite: 'Pédiatrie' }
-  ];
+  // const medecins = [
+  //   { id: '1', nom: 'Dr. Sophie Martin', specialite: 'Cardiologie' },
+  //   { id: '2', nom: 'Dr. Michel Leroy', specialite: 'Dermatologie' },
+  //   { id: '3', nom: 'Dr. Anne Dubois', specialite: 'Pédiatrie' }
+  // ];
 
   const creneauxDisponibles = [
     '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
     '14:00', '14:30', '15:00', '15:30', '16:00', '16:30'
   ];
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+  
 
-    try {
-      // Simulation de réservation
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast({
-        title: "Rendez-vous réservé avec succès",
-        description: "Votre demande de rendez-vous a été envoyée au médecin",
-      });
-      
-      navigate('/patient');
-    } catch (error) {
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la réservation",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setLoading(true);
+  console.log(user);
+  let dataToSend = {
+        medecinId: formData.medecinId,
+        date: formData.date,
+        heure: formData.heure,
+        motif: formData.motif,
+      }
+    
+
+  try {
+    const response = await fetch(`http://127.0.0.1:5000/patient/${user.id}/rdv`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(dataToSend)
+    });
+    if (!response.ok) throw new Error("Erreur API");
+    
+    toast({
+      title: "Rendez-vous réservé avec succès",
+      description: "Votre demande de rendez-vous a été envoyée au médecin",
+    });
+    navigate('/patient');
+  } catch (error) {
+    toast({
+      title: "Erreur",
+      description: "Une erreur est survenue lors de la réservation",
+      variant: "destructive",
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -98,7 +134,7 @@ const ReserverRdv: React.FC = () => {
                   </SelectTrigger>
                   <SelectContent>
                     {medecins.map((medecin) => (
-                      <SelectItem key={medecin.id} value={medecin.id}>
+                      <SelectItem key={medecin._id} value={medecin._id}>
                         {medecin.nom} - {medecin.specialite}
                       </SelectItem>
                     ))}

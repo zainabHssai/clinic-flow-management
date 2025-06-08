@@ -20,35 +20,54 @@ const Login: React.FC = () => {
     setLoading(true);
 
     try {
-      const success = await login(email, password);
-      if (success) {
-        toast({
-          title: "Connexion réussie",
-          description: "Bienvenue dans votre espace",
+        const response = await fetch('http://127.0.0.1:5000/auth/login', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({"email" : email, "password":password})
         });
-        navigate('/');
-      } else {
-        toast({
-          title: "Erreur de connexion",
-          description: "Email ou mot de passe incorrect",
-          variant: "destructive",
-        });
-      }
+
+        if (!response.ok) throw new Error('Identifiants invalides');
+
+        const { user } = await response.json();
+
+        // Stockage dans localStorage
+        const userToStore = {
+            id: user._id,
+            nom: user.nom,
+            prenom: user.prenom,
+            email: user.email,
+            role: user.role,
+            ...(user.role === 'patient' && {
+                dateNaissance: user.dateNaissance,
+                adress: user.adress,
+                sexe: user.sexe
+            }),
+            ...(user.role === 'medecin' && {
+                specialite: user.specialite
+            })
+        };
+
+        localStorage.setItem('currentUser', JSON.stringify(userToStore));
+        await login(userToStore); // Mise à jour du contexte/auth
+
+        toast({ title: "Connexion réussie" });
+        navigate(`/${user.role}`);
+
     } catch (error) {
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue",
-        variant: "destructive",
-      });
+        toast({
+            title: "Erreur",
+            description: error.message || "Email ou mot de passe incorrect",
+            variant: "destructive",
+        });
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
     
-      />
+
       <div className="absolute inset-0 bg-blue-900/20" />
       <div className="absolute inset-0 bg-gradient-to-br from-blue-600/30 via-transparent to-blue-800/30" />
 

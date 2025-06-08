@@ -17,8 +17,10 @@ const Register: React.FC = () => {
     email: '',
     password: '',
     role: '' as UserRole,
-    age: '',
-    contact: '',
+    dateNaissance: '',
+    sexe: '',
+    telephone: '',
+    adress: '',
     specialite: ''
   });
   const [loading, setLoading] = useState(false);
@@ -30,37 +32,64 @@ const Register: React.FC = () => {
     setLoading(true);
 
     try {
-      const userData: any = {
-        nom: formData.nom,
-        prenom: formData.prenom,
-        email: formData.email,
-        password: formData.password,
-        role: formData.role
-      };
+    const userData = {
+      nom: formData.nom,
+      prenom: formData.prenom,
+      email: formData.email,
+      password: formData.password,
+      role: formData.role,
+      telephone: formData.telephone,
+      ...(formData.role === 'patient' && {
+          dateNaissance: formData.dateNaissance,
+          adress: formData.adress,
+          sexe: formData.sexe
+      }),
+      ...(formData.role === 'medecin' && {
+          specialite: formData.specialite
+      })
+    };
 
-      if (formData.role === 'patient') {
-        userData.age = parseInt(formData.age);
-        userData.contact = formData.contact;
-      } else if (formData.role === 'medecin') {
-        userData.specialite = formData.specialite;
-      }
+    const response = await fetch('http://127.0.0.1:5000/auth/register', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(userData)
+    });
 
-      const success = await register(userData);
-      if (success) {
-        toast({
+    if (!response.ok) throw new Error('Erreur lors de la création du compte');
+
+    const responseData = await response.json();
+
+    // Stockage des données
+    localStorage.setItem('authToken', responseData.token || '');
+    
+    const userToStore = {
+        id: responseData.id,
+        nom: userData.nom,
+        prenom: userData.prenom,
+        email: userData.email,
+        role: userData.role,
+    };
+    
+    localStorage.setItem('currentUser', JSON.stringify(userToStore));
+    
+    // Mise à jour de l'état via AuthProvider
+    await register(userData);
+
+      toast({
           title: "Compte créé avec succès",
           description: "Bienvenue dans votre espace",
-        });
-        navigate('/');
-      }
-    } catch (error) {
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la création du compte",
-        variant: "destructive",
       });
+      navigate(`/${userData.role}`);
+      console.log(localStorage.getItem("currentUser"));
+
+      } catch (error) {
+        toast({
+            title: "Erreur",
+            description: error.message || "Une erreur est survenue",
+            variant: "destructive",
+        });
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
   };
 
@@ -140,6 +169,17 @@ const Register: React.FC = () => {
               </div>
 
               <div className="space-y-2">
+                <Label htmlFor="telephone">Téléphone</Label>
+                <Input
+                  id="telephone"
+                  placeholder="0601020304"
+                  value={formData.telephone}
+                  onChange={(e) => handleChange('telephone', e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="role">Type de compte</Label>
                 <Select onValueChange={(value) => handleChange('role', value)} required>
                   <SelectTrigger>
@@ -156,26 +196,38 @@ const Register: React.FC = () => {
               {formData.role === 'patient' && (
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="age">Âge</Label>
+                    <Label htmlFor="age">Date de Naissance</Label>
                     <Input
-                      id="age"
-                      type="number"
-                      placeholder="Age"
-                      value={formData.age}
-                      onChange={(e) => handleChange('age', e.target.value)}
+                      id="dateNaissance"
+                      type="date"
+                      placeholder="Date"
+                      value={formData.dateNaissance}
+                      onChange={(e) => handleChange('dateNaissance', e.target.value)}
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="contact">Téléphone</Label>
-                    <Input
-                      id="contact"
-                      placeholder="0123456789"
-                      value={formData.contact}
-                      onChange={(e) => handleChange('contact', e.target.value)}
-                      required
-                    />
+                    <Label htmlFor="sexe">Sexe</Label>
+                    <Select onValueChange={(value) => handleChange('sexe', value)} required>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Homme ou Femme" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="H">Homme</SelectItem>
+                    <SelectItem value="M">Femme</SelectItem>
+                  </SelectContent>
+                </Select>
                   </div>
+                  <div className="space-y-2 col-span-2">
+                <Label htmlFor="adress">Adresse</Label>
+                <Input
+                  id="adress"
+                  placeholder="Rue Ibn Sina..."
+                  value={formData.adress}
+                  onChange={(e) => handleChange('adress', e.target.value)}
+                  required
+                />
+              </div>
                 </div>
               )}
 
