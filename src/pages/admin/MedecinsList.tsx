@@ -69,6 +69,24 @@ const MedecinsList: React.FC = () => {
   fetchMedecins();
 }, []);
 
+const handleDelete = async (id: string) => {
+  if (!window.confirm("Êtes-vous sûr de vouloir supprimer ce médecin ?")) return;
+  try {
+    const response = await fetch(`http://localhost:5000/admin/medecins/${id}`, {
+      method: 'DELETE',
+    });
+
+    if (!response.ok) {
+      throw new Error("Erreur lors de la suppression");
+    }
+
+    setMedecins(prev => prev.filter(m => m._id !== id));
+  } catch (error) {
+    console.error("Erreur lors de la suppression :", error);
+  }
+};
+
+
 
   return (
     <div className="p-6 space-y-6">
@@ -121,10 +139,16 @@ const MedecinsList: React.FC = () => {
                 <Button variant="outline" size="sm" className="flex-1">
                   Modifier
                 </Button>
-                <Button variant="outline" size="sm" className="flex-1">
-                  Planning
+                <Button 
+                  variant="destructive" 
+                  size="sm" 
+                  className="flex-1"
+                  onClick={() => handleDelete(medecin._id)}
+                >
+                  Supprimer
                 </Button>
               </div>
+              
             </CardContent>
           </Card>
         ))}

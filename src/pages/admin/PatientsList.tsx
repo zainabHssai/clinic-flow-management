@@ -41,6 +41,23 @@ const PatientsList: React.FC = () => {
     return Math.abs(ageDate.getUTCFullYear() - 1970);
   };
 
+  const handleDelete = async (id: string) => {
+  if (!window.confirm("Êtes-vous sûr de vouloir supprimer ce patient ?")) return;
+    try {
+    const response = await fetch(`http://localhost:5000/admin/patients/${id}`, {
+      method: 'DELETE',
+    });
+
+    if (!response.ok) {
+      throw new Error("Erreur lors de la suppression");
+    }
+
+    setPatients(prev => prev.filter(p => p._id !== id));
+  } catch (error) {
+    console.error("Erreur lors de la suppression :", error);
+  }
+  }
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
@@ -104,10 +121,14 @@ const PatientsList: React.FC = () => {
                 <Button variant="outline" size="sm" className="flex-1">
                   Modifier
                 </Button>
-                <Button variant="outline" size="sm" className="flex-1">
-                  <Calendar className="h-4 w-4 mr-1" />
-                  RDV
-                </Button>
+                <Button 
+                  variant="destructive" 
+                  size="sm" 
+                  className="flex-1"
+                  onClick={() => handleDelete(patient._id)}
+                  >
+                  Supprimer
+                  </Button>
               </div>
             </CardContent>
           </Card>
