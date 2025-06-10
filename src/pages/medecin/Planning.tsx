@@ -13,47 +13,49 @@ const Planning: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const fetchRendezVous = async (date, setPlanningData, setLoading, setError) => {
-  setLoading(true);
-  setError(null);
-  try {
-    // 1. Récupérer les RDV avec patient_id
-    const resRdv = await axios.get(`http://localhost:5000/medecin/rendezvous`, { params: { date } });
-    const rendezvousList = resRdv.data;
+  const fetchRendezVous = async (
+    date = selectedDate,
+    setPlanning = setPlanningData,
+    setLoad = setLoading,
+    setErr = setError
+  ) => {
+    setLoad(true);
+    setErr(null);
+    try {
+      const resRdv = await axios.get(`http://localhost:5000/medecin/rendezvous`, {
+        params: { date },
+      });
+      const rendezvousList = resRdv.data;
 
-    // 2. Extraire les patient_id uniques
-    const patientIds = [...new Set(rendezvousList.map(rdv => rdv.patient_id))];
+      const patientIds = [...new Set(rendezvousList.map((rdv: any) => rdv.patient_id))];
+      const params = new URLSearchParams();
+      patientIds.forEach((id: string) => params.append("id", id));
 
-    // 3. Récupérer les infos patients
-    const params = new URLSearchParams();
-    patientIds.forEach((id: string) => params.append("id", id));
-    const resPatients = await axios.get(`http://localhost:5000/patients`, { params });
-    const patientsList = resPatients.data;
+      const resPatients = await axios.get(`http://localhost:5000/patients`, { params });
+      const patientsList = resPatients.data;
 
-    // 4. Créer un mapping patient_id => patient_info
-    const patientsMap = {};
-    patientsList.forEach(p => {
-      patientsMap[p._id] = p;
-    });
+      const patientsMap: Record<string, any> = {};
+      patientsList.forEach((p: any) => {
+        patientsMap[p._id] = p;
+      });
 
-    // 5. Fusionner les infos dans les rendez-vous
-    const enrichedRendezvous = rendezvousList.map(rdv => ({
-      ...rdv,
-      patient: patientsMap[rdv.patient_id] || null,
-    }));
+      const enrichedRendezvous = rendezvousList.map((rdv: any) => ({
+        ...rdv,
+        patient: patientsMap[rdv.patient_id] || null,
+      }));
 
-    setPlanningData(enrichedRendezvous);
-    console.log("Rendez-vous enrichis :", enrichedRendezvous);
-  } catch (error) {
-    setError("Erreur lors de la récupération des rendez-vous.");
-    console.error(error);
-  } finally {
-    setLoading(false);
-  }
-};
+      setPlanning(enrichedRendezvous);
+      console.log("Rendez-vous enrichis :", enrichedRendezvous);
+    } catch (err) {
+      setErr("Erreur lors de la récupération des rendez-vous.");
+      console.error(err);
+    } finally {
+      setLoad(false);
+    }
+  };
 
   useEffect(() => {
-    fetchRendezVous(selectedDate, setPlanningData, setLoading, setError);
+    fetchRendezVous();
   }, [selectedDate]);
 
   const getStatutBadge = (statut: string) => {
@@ -66,6 +68,26 @@ const Planning: React.FC = () => {
         return <Badge className="bg-red-100 text-red-800">Annulé</Badge>;
       default:
         return <Badge variant="secondary">{statut}</Badge>;
+    }
+  };
+
+  const validerConsultation = async (consultationId: string) => {
+    try {
+      await axios.put(`http://localhost:5000/medecin/${consultationId}/valider`);
+      await fetchRendezVous(); // Recharge les données après action
+      console.log("Consultation validée avec succès");
+    } catch (error) {
+      console.error("Erreur lors de la validation :", error);
+    }
+  };
+
+  const annulerConsultation = async (consultationId: string) => {
+    try {
+      await axios.put(`http://localhost:5000/patient/rdv/${consultationId}/annuler`);
+      await fetchRendezVous(); // Recharge les données après action
+      console.log("Consultation annulée avec succès");
+    } catch (error) {
+      console.error("Erreur lors de l'annulation :", error);
     }
   };
 
@@ -131,17 +153,33 @@ const Planning: React.FC = () => {
                         <div className="flex space-x-2 ml-4">
                           {creneau.statut !== 'libre' && (
                             <>
-                              {/* <Button size="sm" variant="outline">
-                                Modifier
-                              </Button> */}
-                              <Button 
-                                size="sm" 
-                                variant="outline"
-                                onClick={() => navigate(`/medecin/consultation/${creneau._id}`)}
-                              >
-                                <FileText className="h-4 w-4 mr-1" />
-                                Dossier
-                              </Button>
+                              {(creneau.etat === 'validé' || creneau.etat === 'refusé') ? (
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  onClick={() => navigate(`/medecin/consultation/${creneau._id}`)}
+                                >
+                                  <FileText className="h-4 w-4 mr-1" />
+                                  Dossier
+                                </Button>
+                              ) : (
+                                <>
+                                  <Button 
+                                    size="sm" 
+                                    className="bg-green-600 hover:bg-green-700"
+                                    onClick={() => validerConsultation(creneau._id)}
+                                  >
+                                    Valider
+                                  </Button>
+                                  <Button 
+                                    size="sm" 
+                                    variant="destructive"
+                                    onClick={() => annulerConsultation(creneau._id)}
+                                  >
+                                    Refuser
+                                  </Button>
+                                </>
+                              )}
                             </>
                           )}
                           {creneau.statut === 'libre' && (

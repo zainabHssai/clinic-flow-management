@@ -11,6 +11,7 @@ import { fetchDernieresConsultations } from "@/services/api";
 
 const MedecinDashboard: React.FC = () => {
   const navigate = useNavigate();
+  const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
 
   // Données mockées pour la démo
   // const consultations = [
@@ -42,7 +43,7 @@ const MedecinDashboard: React.FC = () => {
   const [consultations, setConsultations] = useState([]);
   const fetchConsultations = async () => {
   try {
-    const medecinId = "6844b71ec386496aa22a560e"; // à remplacer dynamiquement si possible
+    const medecinId = user.id; // à remplacer dynamiquement si possible
     const response = await axios.get(`http://localhost:5000/api/medecin/${medecinId}/rendezvous`);
     const data = response.data;
     console.log("Consultations récupérées :", data);

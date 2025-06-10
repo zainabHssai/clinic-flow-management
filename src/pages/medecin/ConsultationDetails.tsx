@@ -234,6 +234,7 @@ const ConsultationDetails: React.FC = () => {
             </div>
 
             <div className="flex space-x-4 pt-4">
+              {/* Bouton Sauvegarder */}
               <button 
                 onClick={() => handleSave()}
                 className={`flex items-center space-x-2 border border-gray-300 rounded px-3 py-1
@@ -243,20 +244,33 @@ const ConsultationDetails: React.FC = () => {
               >
                 💾 <span>Sauvegarder</span>
               </button>
+
+              {/* Bouton Créer ordonnance */}
               <button 
                 onClick={() => navigate(`/medecin/ordonnance/${consultation.id}`)}
                 className="flex items-center space-x-2 bg-purple-600 text-white rounded px-3 py-1 hover:bg-purple-700"
               >
                 📄 <span>Créer ordonnance</span>
               </button>
-              <button 
-                onClick={() => {handleValiderConsultation()}}
-                className={`flex items-center space-x-2 bg-green-600 text-white rounded px-3 py-1 hover:bg-green-700${consultation.etat === 'terminé' ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : ''}`}
-                disabled={consultation.etat === 'terminé'}
-              >
-                <span>Valider consultation</span>
-              </button>
+
+              {/* Bouton conditionnel : Valider ou Retour */}
+              {consultation.etat === 'terminé' ? (
+                <button
+                  onClick={() => navigate('/medecin')}
+                  className="flex items-center space-x-2 bg-gray-500 text-white rounded px-3 py-1 hover:bg-gray-600"
+                >
+                  🔙 <span>Retour</span>
+                </button>
+              ) : (
+                <button 
+                  onClick={handleValiderConsultation}
+                  className="flex items-center space-x-2 bg-green-600 text-white rounded px-3 py-1 hover:bg-green-700"
+                >
+                  ✅ <span>Valider consultation</span>
+                </button>
+              )}
             </div>
+
           </div>
         </div>
       </div>
