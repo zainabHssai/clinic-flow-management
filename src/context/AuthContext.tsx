@@ -75,7 +75,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     mockUsers.push(newUser);
     const { password: _, ...userWithoutPassword } = newUser;
     setUser(userWithoutPassword);
-    localStorage.setItem('currentUser', JSON.stringify(userWithoutPassword));
+    //localStorage.setItem('currentUser', JSON.stringify(userWithoutPassword));
     return true;
   };
 

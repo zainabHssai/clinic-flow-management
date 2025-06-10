@@ -26,6 +26,44 @@ const Register: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
+  const [formErrors, setFormErrors] = useState({
+  telephone: null as string | null,
+  password: null as string | null,
+});
+
+
+  const isPhoneValid = /^(0[5-7])[0-9]{8}$/.test(formData.telephone);
+  const isPasswordValid = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(formData.password);
+
+
+  const isValidForm = () => {
+  const baseValid =
+    formData.nom &&
+    formData.prenom &&
+    formData.email &&
+    formData.password &&
+    isPhoneValid &&
+    isPasswordValid && // 🔴 Ajout de la validation du mot de passe
+    formData.role;
+
+  if (formData.role === 'patient') {
+    return baseValid &&
+      formData.dateNaissance &&
+      formData.sexe &&
+      formData.adress;
+  }
+
+  if (formData.role === 'medecin') {
+    return baseValid && formData.specialite;
+  }
+
+  return baseValid;
+};
+
+
+
+
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,6 +96,7 @@ const Register: React.FC = () => {
     if (!response.ok) throw new Error('Erreur lors de la création du compte');
 
     const responseData = await response.json();
+    console.log(responseData);
 
     // Stockage des données
     localStorage.setItem('authToken', responseData.token || '');
@@ -69,6 +108,8 @@ const Register: React.FC = () => {
         email: userData.email,
         role: userData.role,
     };
+
+    console.log(userToStore);
     
     localStorage.setItem('currentUser', JSON.stringify(userToStore));
     
@@ -93,9 +134,19 @@ const Register: React.FC = () => {
     }
   };
 
+
   const handleChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
+  if (field === 'telephone') {
+    if (!/^(0[5-7])[0-9]{8}$/.test(value)) {
+      setFormErrors((prev) => ({ ...prev, telephone: 'Le numéro doit contenir 10 chiffres et commencer par 05, 06 ou 07.' }));
+    } else {
+      setFormErrors((prev) => ({ ...prev, telephone: null }));
+    }
+  }
+
+  setFormData((prev) => ({ ...prev, [field]: value }));
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden py-8">
@@ -165,18 +216,31 @@ const Register: React.FC = () => {
                   value={formData.password}
                   onChange={(e) => handleChange('password', e.target.value)}
                   required
-                />
+                  className={!isPasswordValid && formData.password ? 'border-red-500' : ''}
+                  />
+
+                    {formData.password && !isPasswordValid && (
+                      <p className="text-red-500 text-sm mt-1">
+                        Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule et un chiffre.
+                      </p>
+                    )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="telephone">Téléphone</Label>
-                <Input
-                  id="telephone"
-                  placeholder="0601020304"
-                  value={formData.telephone}
-                  onChange={(e) => handleChange('telephone', e.target.value)}
-                  required
-                />
+                  <Label htmlFor="telephone">Téléphone</Label>
+                    <Input
+                      id="telephone"
+                      type="tel"
+                      placeholder="06XXXXXXXX"
+                      value={formData.telephone}
+                      onChange={(e) => handleChange('telephone', e.target.value)}
+                      required
+                      className={!isPhoneValid ? "border-red-500 focus-visible:ring-red-500" : ""}
+                    />
+                    {formData.telephone && !isPhoneValid && (
+                      <p className="text-sm text-red-500">{formErrors.telephone}</p>
+                    )}
+
               </div>
 
               <div className="space-y-2">
@@ -247,7 +311,7 @@ const Register: React.FC = () => {
               <Button 
                 type="submit" 
                 className="w-full h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium"
-                disabled={loading}
+                disabled={loading || !isValidForm()}
               >
                 <UserPlus className="mr-2 h-4 w-4" />
                 {loading ? 'Création...' : 'Créer le compte'}

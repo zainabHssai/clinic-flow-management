@@ -19,6 +19,13 @@ const AjouterMedecin: React.FC = () => {
     password: "",
   });
   const [loading, setLoading] = useState(false);
+  const [formErrors, setFormErrors] = useState({
+    telephone: null as string | null,
+    password: null as string | null,
+  });
+  
+  const isPhoneValid = /^(0[5-7])[0-9]{8}$/.test(formData.telephone);
+  const isPasswordValid = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(formData.password);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,8 +60,38 @@ const AjouterMedecin: React.FC = () => {
   };
 
   const handleChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
+  if (field === 'telephone') {
+    if (!/^(0[5-7])[0-9]{8}$/.test(value)) {
+      setFormErrors(prev => ({ ...prev, telephone: 'Le numéro doit contenir 10 chiffres et commencer par 05, 06 ou 07.' }));
+    } else {
+      setFormErrors(prev => ({ ...prev, telephone: null }));
+    }
+  }
+
+  if (field === 'password') {
+    if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(value)) {
+      setFormErrors(prev => ({ ...prev, password: 'Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule et un chiffre.' }));
+    } else {
+      setFormErrors(prev => ({ ...prev, password: null }));
+    }
+  }
+
+  setFormData(prev => ({ ...prev, [field]: value }));
+};
+
+const isValidForm = () => {
+  return (
+    formData.nom &&
+    formData.prenom &&
+    formData.specialite &&
+    formData.email &&
+    isPhoneValid &&
+    isPasswordValid &&
+    !formErrors.telephone &&
+    !formErrors.password
+  );
+};
+
 
   return (
     <div className="p-6 space-y-6">
@@ -132,7 +169,11 @@ const AjouterMedecin: React.FC = () => {
                   value={formData.telephone}
                   onChange={(e) => handleChange("telephone", e.target.value)}
                   required
+                className={!isPhoneValid && formData.telephone ? 'border-red-500 outline-red-500' : ''}
                 />
+                {formData.telephone && !isPhoneValid && (
+                      <p className="text-sm text-red-500">{formErrors.telephone}</p>
+                    )}
               </div>
 
               {/* Champ Password ajouté */}
@@ -145,8 +186,13 @@ const AjouterMedecin: React.FC = () => {
                   value={formData.password}
                   onChange={(e) => handleChange("password", e.target.value)}
                   required
-                  minLength={6}
+                  className={!isPasswordValid && formData.password ? 'border-red-500 outline-red-500' : ''}
                 />
+                {formData.password && !isPasswordValid && (
+                      <p className="text-red-500 text-sm mt-1">
+                        Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule et un chiffre.
+                      </p>
+                    )}
               </div>
 
               <div className="flex space-x-4">
